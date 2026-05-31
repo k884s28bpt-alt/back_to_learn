@@ -1,3 +1,6 @@
+# Import Python's built-in database library
+# No installation needed — comes with Python automatically
+# Used to create and manage the database.db file
 import sqlite3
 
 def get_db_connection():
@@ -34,4 +37,3 @@ def init_db():
 
     conn.commit()
     conn.close()
-    

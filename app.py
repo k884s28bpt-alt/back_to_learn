@@ -6,15 +6,19 @@ from logic import (login_user, register_user, get_user_topics,
 app = Flask(__name__)
 app.secret_key = 'back_to_learn_secret_2026'
 
-with app.app_context():
-    init_db()
+with app.app_context(): # badge in → "I belong to this app"
+    init_db() # now do the work
 
+
+# Helper function — checks if a user is currently logged in
+# Returns True if user_id exists in session, False if not
+# Used at the start of every route to protect pages from non-logged-in users
 def is_logged_in():
     return 'user_id' in session
 
-@app.route('/')
+@app.route('/')# Home page — immediately redirects to login
 def home():
-    return redirect('/login')
+    return redirect('/login')# No content here, login is the real starting point
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
