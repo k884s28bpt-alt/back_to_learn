@@ -10,10 +10,6 @@ from logic import (
     get_user_topics
 )
 
-# ── Test database setup ──────────────────────────────────────────────────────
-# We patch get_db_connection to use an in-memory DB so tests never
-# touch your real database.db
-
 import database
 
 def get_test_db():
@@ -41,11 +37,8 @@ def get_test_db():
     conn.commit()
     return conn
 
-# Override the real DB connection with our test one
 database.get_db_connection = get_test_db
 
-
-# ── Test Cases ───────────────────────────────────────────────────────────────
 
 class TestHashPassword(unittest.TestCase):
 
@@ -60,14 +53,13 @@ class TestHashPassword(unittest.TestCase):
         self.assertNotEqual(hash_password("abc123"), hash_password("xyz789"))
 
     def test_hash_length(self):
-        # SHA-256 always returns 64 hex characters
         self.assertEqual(len(hash_password("any_password")), 64)
 
 
 class TestRegisterUser(unittest.TestCase):
 
     def test_valid_registration(self):
-        success, msg = register_user("sara_k", "pass123", "7")
+        success, msg = register_user("newuser1", "pass123", "7")
         self.assertTrue(success)
 
     def test_empty_username_fails(self):
@@ -76,7 +68,7 @@ class TestRegisterUser(unittest.TestCase):
         self.assertIn("required", msg.lower())
 
     def test_empty_password_fails(self):
-        success, msg = register_user("farah", "", "7")
+        success, msg = register_user("farah1", "", "7")
         self.assertFalse(success)
         self.assertIn("required", msg.lower())
 
@@ -86,7 +78,7 @@ class TestRegisterUser(unittest.TestCase):
         self.assertIn("3 characters", msg)
 
     def test_grade_not_a_number_fails(self):
-        success, msg = register_user("layla", "pass123", "abc")
+        success, msg = register_user("layla1", "pass123", "abc")
         self.assertFalse(success)
         self.assertIn("number", msg.lower())
 
@@ -101,8 +93,8 @@ class TestRegisterUser(unittest.TestCase):
         self.assertIn("between 1 and 12", msg)
 
     def test_duplicate_username_fails(self):
-        register_user("maria", "pass123", "5")
-        success, msg = register_user("maria", "pass456", "6")
+        register_user("maria1", "pass123", "5")
+        success, msg = register_user("maria1", "pass456", "6")
         self.assertFalse(success)
         self.assertIn("already exists", msg.lower())
 
@@ -110,15 +102,15 @@ class TestRegisterUser(unittest.TestCase):
 class TestLoginUser(unittest.TestCase):
 
     def setUp(self):
-        register_user("nadia_test", "mypassword", "9")
+        register_user("nadiatest1", "mypassword", "9")
 
     def test_correct_credentials_returns_user(self):
-        user = login_user("nadia_test", "mypassword")
+        user = login_user("nadiatest1", "mypassword")
         self.assertIsNotNone(user)
-        self.assertEqual(user["username"], "nadia_test")
+        self.assertEqual(user["username"], "nadiatest1")
 
     def test_wrong_password_returns_none(self):
-        user = login_user("nadia_test", "wrongpass")
+        user = login_user("nadiatest1", "wrongpass")
         self.assertIsNone(user)
 
     def test_wrong_username_returns_none(self):
@@ -183,14 +175,11 @@ class TestUpdateTopicStatus(unittest.TestCase):
 class TestGetUserTopics(unittest.TestCase):
 
     def test_returns_only_own_topics(self):
-        # User 99 adds a topic
-        add_topic(99, "History", "World War II", "11")
-        # User 100 adds a different topic
-        add_topic(100, "Biology", "Photosynthesis", "10")
-
-        user_99_topics = get_user_topics(99)
-        for topic in user_99_topics:
-            self.assertEqual(topic["user_id"], 99)
+        add_topic(991, "History", "World War II", "11")
+        add_topic(992, "Biology", "Photosynthesis", "10")
+        user_991_topics = get_user_topics(991)
+        for topic in user_991_topics:
+            self.assertEqual(topic["user_id"], 991)
 
     def test_empty_for_user_with_no_topics(self):
         topics = get_user_topics(9999)
@@ -200,28 +189,26 @@ class TestGetUserTopics(unittest.TestCase):
 class TestDeleteTopic(unittest.TestCase):
 
     def test_delete_returns_true(self):
-        add_topic(5, "Physics", "Newton Laws", "11")
-        topics = get_user_topics(5)
+        add_topic(501, "Physics", "Newton Laws", "11")
+        topics = get_user_topics(501)
         topic_id = topics[0]["id"]
-        result = delete_topic(topic_id, 5)
+        result = delete_topic(topic_id, 501)
         self.assertTrue(result)
 
     def test_topic_removed_after_delete(self):
-        add_topic(6, "Chemistry", "Atoms", "10")
-        topics = get_user_topics(6)
+        add_topic(502, "Chemistry", "Atoms", "10")
+        topics = get_user_topics(502)
         topic_id = topics[0]["id"]
-        delete_topic(topic_id, 6)
-        remaining = get_user_topics(6)
+        delete_topic(topic_id, 502)
+        remaining = get_user_topics(502)
         self.assertEqual(len(remaining), 0)
 
     def test_cannot_delete_other_users_topic(self):
-        # User 7 adds a topic
-        add_topic(7, "Math", "Algebra", "9")
-        topics = get_user_topics(7)
+        add_topic(503, "Math", "Algebra", "9")
+        topics = get_user_topics(503)
         topic_id = topics[0]["id"]
-        # User 8 tries to delete it — should not affect user 7's data
-        delete_topic(topic_id, 8)
-        remaining = get_user_topics(7)
+        delete_topic(topic_id, 504)
+        remaining = get_user_topics(503)
         self.assertEqual(len(remaining), 1)
 
 
